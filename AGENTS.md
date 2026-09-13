@@ -38,3 +38,6 @@ Add a shadcn component with `pnpm dlx shadcn@latest add <name>` (README says `np
 ## Skills (reference material)
 
 `.agents/skills/` is vendored, locked by `skills-lock.json`, and gitignored. Skills present: `composition-patterns`, `frontend-design`, `react-best-practices`, `seo`, `shadcn`, `tailwind-css-patterns`, `tailwind-v4-shadcn`, `typescript-advanced-types`, `vite`. Consult these (especially `tailwind-v4-shadcn` and `shadcn`) before introducing patterns that conflict with the v4 / radix-nova setup here.
+
+
+## EDITANDO!

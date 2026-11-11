@@ -1,4 +1,4 @@
-import { IconMapPin, IconUser } from "@tabler/icons-react"
+import { IconChevronRight, IconMapPin, IconUser } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,13 +29,13 @@ export function DeliveryOrderCard({
 
   return (
     <Card
-      className="cursor-pointer transition-colors hover:bg-muted/40"
+      className="group/delivery cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:bg-muted/30 hover:shadow-md hover:ring-foreground/20"
       onClick={() => onShowDetails(order)}
     >
       <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-heading text-base font-semibold tabular-nums">
+            <span className="font-heading text-base font-semibold tracking-tight tabular-nums transition-colors group-hover/delivery:text-primary">
               Pedido #{shortId}
             </span>
             <OrderStatusBadge status={order.status} />
@@ -46,7 +46,7 @@ export function DeliveryOrderCard({
           <div className="flex flex-col gap-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <IconUser className="size-3.5 shrink-0" aria-hidden />
-              <span className="truncate text-foreground">
+              <span className="truncate font-medium text-foreground">
                 {clientLabel(order)}
               </span>
             </span>
@@ -77,6 +77,7 @@ export function DeliveryOrderCard({
                   onCancel(order)
                 }}
                 aria-label={`Cancelar pedido ${shortId}`}
+                className="hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
               >
                 Cancelar pedido
               </Button>
@@ -92,7 +93,25 @@ export function DeliveryOrderCard({
                 Registrar entrega
               </Button>
             </div>
-          ) : null}
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onShowDetails(order)
+              }}
+              aria-label={`Ver detalle del pedido ${shortId}`}
+              className="text-muted-foreground group-hover/delivery:text-foreground"
+            >
+              Detalle
+              <IconChevronRight
+                data-icon="inline-end"
+                className="transition-transform duration-150 group-hover/delivery:translate-x-0.5"
+              />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

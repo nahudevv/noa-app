@@ -16,7 +16,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
   const lineTotal = item.price * item.quantity
 
   return (
-    <li className="flex flex-col gap-2 py-3">
+    <li className="flex animate-fade-up flex-col gap-2 py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{item.name}</p>
@@ -30,7 +30,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           size="icon-xs"
           onClick={() => removeItem(item.productId)}
           aria-label={`Quitar ${item.name}`}
-          className="text-muted-foreground hover:text-destructive"
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         >
           <IconTrash />
         </Button>
@@ -62,7 +62,7 @@ function QuantityStepper({
 }: QuantityStepperProps) {
   return (
     <div
-      className="inline-flex items-center rounded-md border border-border bg-card"
+      className="inline-flex items-center rounded-lg border border-border bg-card shadow-2xs"
       role="group"
       aria-label="Cantidad"
     >
@@ -77,7 +77,8 @@ function QuantityStepper({
         −
       </Button>
       <span
-        className="min-w-5 text-center text-xs font-medium tabular-nums"
+        key={quantity}
+        className="min-w-6 animate-scale-in text-center text-xs font-semibold tabular-nums"
         aria-live="polite"
       >
         {quantity}

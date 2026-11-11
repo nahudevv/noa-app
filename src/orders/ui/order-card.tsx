@@ -23,13 +23,13 @@ export function OrderCard({ order, onShowDetails, onCancel }: OrderCardProps) {
 
   return (
     <Card
-      className="cursor-pointer transition-colors hover:bg-muted/40"
+      className="group/order cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:bg-muted/30 hover:shadow-md hover:ring-foreground/20"
       onClick={() => onShowDetails(order)}
     >
       <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-heading text-base font-semibold tabular-nums">
+            <span className="font-heading text-base font-semibold tracking-tight tabular-nums transition-colors group-hover/order:text-primary">
               Pedido #{shortId}
             </span>
             <OrderStatusBadge status={order.status} />
@@ -82,7 +82,10 @@ export function OrderCard({ order, onShowDetails, onCancel }: OrderCardProps) {
               aria-label={`Mostrar detalles del pedido ${shortId}`}
             >
               Mostrar detalles
-              <IconChevronRight data-icon="inline-end" />
+              <IconChevronRight
+                data-icon="inline-end"
+                className="transition-transform duration-150 group-hover/order:translate-x-0.5"
+              />
             </Button>
           </div>
         </div>

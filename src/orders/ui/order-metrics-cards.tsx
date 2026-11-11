@@ -5,8 +5,8 @@ import {
   IconReceipt,
 } from "@tabler/icons-react"
 
-import { formatCurrency } from "@/shared/lib/format"
 import type { Order } from "@/orders/model"
+import { formatCurrency } from "@/shared/lib/format"
 
 export type OrderMetricsCardsProps = {
   orders: Order[]

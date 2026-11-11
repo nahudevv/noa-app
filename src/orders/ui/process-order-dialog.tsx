@@ -140,7 +140,7 @@ export function ProcessOrderDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
               <DialogTitle>Procesar pedido #{shortId}</DialogTitle>
               <OrderStatusBadge status={details.status} />
             </div>
@@ -187,21 +187,21 @@ export function ProcessOrderDialog({
           </div>
 
           {loadingDetails && details.items.length === 0 ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center rounded-xl border border-border bg-muted/20 py-8">
               <Spinner className="size-5 text-muted-foreground" />
             </div>
           ) : details.items.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
+            <div className="rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">
               Sin productos detallados para este pedido.
             </div>
           ) : (
-            <ul className="flex max-h-56 flex-col divide-y divide-border overflow-y-auto rounded-lg border border-border">
+            <ul className="flex max-h-56 flex-col divide-y divide-border overflow-y-auto rounded-xl border border-border bg-muted/15">
               {details.items.map((item) => {
                 const lineTotal = item.price * item.quantity
                 return (
                   <li
                     key={item.productId || item.name}
-                    className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 px-3 py-2 text-sm"
+                    className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-0.5 px-3.5 py-2.5 text-sm transition-colors hover:bg-muted/40"
                   >
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate font-medium">{item.name}</span>
@@ -211,7 +211,7 @@ export function ProcessOrderDialog({
                         {formatCurrency(item.price)} / {item.unit}
                       </span>
                     </div>
-                    <span className="self-center text-right font-medium tabular-nums">
+                    <span className="self-center text-right font-semibold tabular-nums">
                       {formatCurrency(lineTotal)}
                     </span>
                   </li>
@@ -221,9 +221,9 @@ export function ProcessOrderDialog({
           )}
 
           {/* TOTAL BREAKDOWN */}
-          <div className="flex items-center justify-between px-1 pt-3">
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-border/80 bg-muted/30 px-3.5 py-2.5">
             <span className="text-sm font-medium text-muted-foreground">
-              Total
+              Total del pedido
             </span>
             <span className="text-lg font-bold text-foreground tabular-nums">
               {formatCurrency(details.subtotal)}
@@ -232,7 +232,7 @@ export function ProcessOrderDialog({
 
           {/* OBSERVATIONS NOTICE IF CLIENT LEFT ANY */}
           {details.observations && (
-            <div className="mt-2 rounded-lg bg-muted/40 p-2.5 text-xs text-muted-foreground">
+            <div className="mt-2.5 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
               <strong className="text-foreground">Nota del cliente:</strong>{" "}
               {details.observations}
             </div>
@@ -241,85 +241,82 @@ export function ProcessOrderDialog({
 
         {/* CANCELLATION FORM MODE */}
         {mode === "cancel" && (
-          <>
-            <Separator />
-            <div className="flex flex-col gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-destructive">
-                <IconAlertTriangle className="size-4" aria-hidden />
-                <span>Cancelar Pedido</span>
-              </div>
-
-              {/* Preset cancellation reason chips */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-foreground">
-                  Seleccioná un motivo:
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {ORDER_CANCEL_REASONS.map((preset) => {
-                    const isChosen = selectedReasonId === preset.id
-                    return (
-                      <button
-                        key={preset.id}
-                        type="button"
-                        onClick={() =>
-                          handleSelectPresetReason(preset.id, preset.label)
-                        }
-                        className={`rounded-md border px-2.5 py-1 text-xs transition-colors ${
-                          isChosen
-                            ? "text-destructive-foreground border-destructive bg-destructive font-medium"
-                            : "border-border bg-card text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Custom reason textarea */}
-              <Field>
-                <FieldLabel htmlFor="cancel-reason" className="text-xs">
-                  Motivo que se registrará:{" "}
-                  <span className="text-destructive">*</span>
-                </FieldLabel>
-                <Textarea
-                  id="cancel-reason"
-                  value={reason}
-                  onChange={(e) => {
-                    setReason(e.target.value)
-                    if (
-                      !ORDER_CANCEL_REASONS.some(
-                        (r) => r.label === e.target.value
-                      )
-                    ) {
-                      setSelectedReasonId("other")
-                    }
-                  }}
-                  placeholder="Describí el motivo de cancelación..."
-                  rows={2}
-                  disabled={submitting}
-                  className="text-xs"
-                />
-              </Field>
-
-              {/* Optional Observations */}
-              <Field>
-                <FieldLabel htmlFor="cancel-observations" className="text-xs">
-                  Observaciones internas (opcional)
-                </FieldLabel>
-                <Textarea
-                  id="cancel-observations"
-                  value={observations}
-                  onChange={(e) => setObservations(e.target.value)}
-                  placeholder="Detalles adicionales para registro administrativo..."
-                  rows={2}
-                  disabled={submitting}
-                  className="text-xs"
-                />
-              </Field>
+          <div className="flex animate-scale-in flex-col gap-3 rounded-xl border border-destructive/25 bg-destructive/5 p-3.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-destructive">
+              <IconAlertTriangle className="size-4" aria-hidden />
+              <span>Cancelar Pedido</span>
             </div>
-          </>
+
+            {/* Preset cancellation reason chips */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-foreground">
+                Seleccioná un motivo:
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {ORDER_CANCEL_REASONS.map((preset) => {
+                  const isChosen = selectedReasonId === preset.id
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() =>
+                        handleSelectPresetReason(preset.id, preset.label)
+                      }
+                      className={`cursor-pointer rounded-lg border px-2.5 py-1 text-xs transition-all duration-150 active:scale-95 ${
+                        isChosen
+                          ? "border-destructive bg-destructive font-medium text-white shadow-2xs"
+                          : "border-border bg-card text-muted-foreground hover:border-destructive/40 hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Custom reason textarea */}
+            <Field>
+              <FieldLabel htmlFor="cancel-reason" className="text-xs">
+                Motivo que se registrará:{" "}
+                <span className="text-destructive">*</span>
+              </FieldLabel>
+              <Textarea
+                id="cancel-reason"
+                value={reason}
+                onChange={(e) => {
+                  setReason(e.target.value)
+                  if (
+                    !ORDER_CANCEL_REASONS.some(
+                      (r) => r.label === e.target.value
+                    )
+                  ) {
+                    setSelectedReasonId("other")
+                  }
+                }}
+                placeholder="Describí el motivo de cancelación..."
+                rows={2}
+                disabled={submitting}
+                className="bg-background/80 text-xs"
+              />
+            </Field>
+
+            {/* Optional Observations */}
+            <Field>
+              <FieldLabel htmlFor="cancel-observations" className="text-xs">
+                Observaciones internas (opcional)
+              </FieldLabel>
+              <Textarea
+                id="cancel-observations"
+                value={observations}
+                onChange={(e) => setObservations(e.target.value)}
+                placeholder="Detalles adicionales para registro administrativo..."
+                rows={2}
+                disabled={submitting}
+                className="bg-background/80 text-xs"
+              />
+            </Field>
+          </div>
         )}
 
         <DialogFooter>
@@ -330,7 +327,7 @@ export function ProcessOrderDialog({
                 variant="outline"
                 disabled={submitting}
                 onClick={() => setMode("cancel")}
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className="text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
               >
                 <IconX className="size-4" data-icon="inline-start" />
                 Cancelar pedido

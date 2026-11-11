@@ -20,7 +20,7 @@ export function OrdersPagination({
   pageSize,
   onPageChange,
 }: OrdersPaginationProps) {
-  if (totalItems === 0 || totalPages <= 1) {
+  if (totalItems === 0) {
     return null
   }
 

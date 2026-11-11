@@ -128,13 +128,13 @@ export function AdminDashboardPage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
       {/* Welcome Banner */}
-      <header className="flex flex-col gap-2 rounded-xl border border-border bg-gradient-to-r from-card to-muted/30 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-2 rounded-xl border border-border bg-gradient-to-r from-card via-card to-primary/5 p-5 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
               ¡Hola, {userName}!
             </h1>
-            <span className="flex size-2 rounded-full bg-emerald-500" />
+            <span className="flex size-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Bienvenido al panel de gestión de{" "}
@@ -146,7 +146,7 @@ export function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Badge variant="outline" className="gap-1.5 py-1 text-xs">
+          <Badge variant="outline" className="gap-1.5 bg-card/80 py-1 text-xs">
             <span className="size-1.5 rounded-full bg-emerald-500" />
             Operación Activa
           </Badge>
@@ -157,7 +157,7 @@ export function AdminDashboardPage() {
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {/* Pending Analysis KPI */}
         <div
-          className={`flex flex-col justify-between rounded-xl border p-4 shadow-xs transition-colors ${
+          className={`flex flex-col justify-between rounded-xl border p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
             pendingAnalysis.length > 0
               ? "border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10"
               : "border-border bg-card"
@@ -172,7 +172,7 @@ export function AdminDashboardPage() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+            <span className="text-2xl font-bold tracking-tight text-amber-600 tabular-nums dark:text-amber-400">
               {pendingAnalysis.length}
             </span>
             {pendingAnalysis.length > 0 && (
@@ -180,11 +180,11 @@ export function AdminDashboardPage() {
                 asChild
                 variant="link"
                 size="sm"
-                className="h-auto p-0 text-xs"
+                className="group/link h-auto p-0 text-xs"
               >
                 <Link to="/admin/pedidos" className="flex items-center gap-1">
                   <span>Revisar</span>
-                  <IconArrowRight className="size-3" />
+                  <IconArrowRight className="size-3 transition-transform group-hover/link:translate-x-0.5" />
                 </Link>
               </Button>
             )}
@@ -192,7 +192,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* In Process KPI */}
-        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold tracking-wider uppercase">
               En Proceso / Logística
@@ -202,7 +202,7 @@ export function AdminDashboardPage() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {inProcess.length}
             </span>
             <span className="text-xs text-muted-foreground">
@@ -212,7 +212,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Delivered Orders KPI */}
-        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold tracking-wider uppercase">
               Entregados
@@ -222,7 +222,7 @@ export function AdminDashboardPage() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline justify-between">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
+            <span className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
               {delivered.length}
             </span>
             <span className="text-xs text-muted-foreground">Completados</span>
@@ -230,7 +230,7 @@ export function AdminDashboardPage() {
         </div>
 
         {/* Total Volume KPI */}
-        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold tracking-wider uppercase">
               Volumen Gestionado
@@ -257,15 +257,16 @@ export function AdminDashboardPage() {
         </h2>
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {MODULES.map((mod) => (
+          {MODULES.map((mod, index) => (
             <Link
               key={mod.to}
               to={mod.to}
-              className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs transition-all hover:border-primary/40 hover:bg-muted/30"
+              style={{ animationDelay: `${index * 40}ms` }}
+              className="group flex animate-fade-up flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted/25 hover:shadow-md"
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-muted transition-all duration-200 group-hover:scale-105 group-hover:bg-primary/10 group-hover:text-primary">
                     <mod.icon className="size-5" aria-hidden />
                   </div>
                   {mod.badge && (
@@ -283,9 +284,12 @@ export function AdminDashboardPage() {
                 </p>
               </div>
 
-              <div className="mt-4 flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="mt-4 flex items-center gap-1 text-xs font-medium text-primary opacity-70 transition-all duration-200 group-hover:opacity-100">
                 <span>Ingresar</span>
-                <IconArrowRight className="size-3.5" aria-hidden />
+                <IconArrowRight
+                  className="size-3.5 transition-transform duration-200 group-hover:translate-x-1"
+                  aria-hidden
+                />
               </div>
             </Link>
           ))}
@@ -303,11 +307,14 @@ export function AdminDashboardPage() {
               asChild
               variant="ghost"
               size="sm"
-              className="h-8 gap-1 text-xs font-medium"
+              className="group/all h-8 gap-1 text-xs font-medium"
             >
               <Link to="/admin/monitoreo">
                 <span>Ver todos en Monitoreo</span>
-                <IconArrowRight className="size-3.5" aria-hidden />
+                <IconArrowRight
+                  className="size-3.5 transition-transform duration-150 group-hover/all:translate-x-0.5"
+                  aria-hidden
+                />
               </Link>
             </Button>
           </div>
@@ -326,7 +333,10 @@ export function AdminDashboardPage() {
               </TableHeader>
               <TableBody>
                 {recentOrders.map((order) => (
-                  <TableRow key={order.id} className="hover:bg-muted/30">
+                  <TableRow
+                    key={order.id}
+                    className="transition-colors hover:bg-muted/40"
+                  >
                     <TableCell className="text-center font-mono text-xs font-semibold text-muted-foreground">
                       #{order.id.slice(0, 8).toUpperCase()}
                     </TableCell>

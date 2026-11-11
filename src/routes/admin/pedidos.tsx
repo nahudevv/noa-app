@@ -28,6 +28,7 @@ import { OrdersPagination } from "@/orders/ui/orders-pagination"
 import { OrderStatusBadge } from "@/orders/ui/order-status-badge"
 import { ProcessOrderDialog } from "@/orders/ui/process-order-dialog"
 import { formatCurrency, formatDate } from "@/shared/lib/format"
+import { usePreservedValue } from "@/shared/lib/use-preserved-value"
 
 const PAGE_SIZE = 8
 
@@ -42,6 +43,7 @@ export function AdminPedidosPage() {
   const updateOrder = useOrdersStore((s) => s.updateOrder)
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const displayedOrder = usePreservedValue(selectedOrder)
   const [searchTerm, setSearchTerm] = useState("")
   const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "all">(
     "all"
@@ -145,7 +147,7 @@ export function AdminPedidosPage() {
   const showInitialLoading = isLoading && orders.length === 0
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-6">
       {/* Header with Title and Actions */}
       <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -263,7 +265,7 @@ export function AdminPedidosPage() {
           <Spinner className="size-6 text-muted-foreground" />
         </div>
       ) : loadError && orders.length === 0 ? (
-        <Empty className="border border-dashed py-12">
+        <Empty className="animate-fade-up border border-dashed py-12">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <IconInbox />
@@ -281,7 +283,7 @@ export function AdminPedidosPage() {
           </Button>
         </Empty>
       ) : pendingOrders.length === 0 ? (
-        <Empty className="border border-dashed py-14">
+        <Empty className="animate-fade-up border border-dashed py-14">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <IconInbox />
@@ -293,7 +295,7 @@ export function AdminPedidosPage() {
           </EmptyHeader>
         </Empty>
       ) : filteredOrders.length === 0 ? (
-        <Empty className="border border-dashed py-14">
+        <Empty className="animate-fade-up border border-dashed py-14">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <IconInbox />
@@ -316,89 +318,97 @@ export function AdminPedidosPage() {
           </Button>
         </Empty>
       ) : (
-        <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30">
-                <TableHead className="w-28 text-center">ID</TableHead>
-                <TableHead className="text-left">Cliente</TableHead>
-                <TableHead className="text-center">Fecha</TableHead>
-                <TableHead className="text-center">Productos</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-center">Estado</TableHead>
-                <TableHead className="text-center">Pago</TableHead>
-                <TableHead className="w-28 text-center">Acción</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedOrders.map((order) => {
-                const payment = PAYMENT_METHODS.find(
-                  (method) => method.id === order.paymentMethod
-                )
-                const totalItemsCount = order.items.reduce(
-                  (total, item) => total + item.quantity,
-                  0
-                )
+        <div className="flex animate-fade-up flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40">
+                  <TableHead className="w-24 text-center font-semibold">
+                    ID
+                  </TableHead>
+                  <TableHead className="text-left font-semibold">
+                    Cliente
+                  </TableHead>
+                  <TableHead className="text-center font-semibold">
+                    Fecha
+                  </TableHead>
+                  <TableHead className="text-right font-semibold">
+                    Total
+                  </TableHead>
+                  <TableHead className="text-center font-semibold">
+                    Pago
+                  </TableHead>
+                  <TableHead className="text-center font-semibold">
+                    Estado
+                  </TableHead>
+                  <TableHead className="w-28 text-center font-semibold">
+                    Acción
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedOrders.map((order) => {
+                  const payment = PAYMENT_METHODS.find(
+                    (method) => method.id === order.paymentMethod
+                  )
 
-                return (
-                  <TableRow
-                    key={order.id}
-                    className="transition-colors hover:bg-muted/40"
-                  >
-                    <TableCell className="text-center font-mono text-xs font-semibold text-muted-foreground">
-                      #{order.id.slice(0, 8).toUpperCase()}
-                    </TableCell>
-                    <TableCell className="text-left">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-foreground">
-                          {order.userName}
-                        </span>
-                        {order.deliveryAddress && (
-                          <span
-                            className="line-clamp-1 max-w-[260px] text-xs text-muted-foreground"
-                            title={order.deliveryAddress}
-                          >
-                            {order.deliveryAddress}
+                  return (
+                    <TableRow
+                      key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className="cursor-pointer transition-colors hover:bg-muted/40"
+                    >
+                      <TableCell className="text-center font-mono text-xs font-semibold text-muted-foreground">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                      </TableCell>
+                      <TableCell className="text-left">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-foreground">
+                            {order.userName}
                           </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center text-xs whitespace-nowrap text-muted-foreground">
-                      {formatDate(order.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-center tabular-nums">
-                      {order.items && order.items.length > 0 ? (
-                        <span className="font-medium">{totalItemsCount}</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-foreground tabular-nums">
-                      {formatCurrency(order.subtotal)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <OrderStatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline">
-                        {payment?.label ?? order.paymentMethod}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => setSelectedOrder(order)}
-                        className="font-medium"
+                          {order.deliveryAddress && (
+                            <span
+                              className="line-clamp-1 max-w-[260px] text-xs text-muted-foreground"
+                              title={order.deliveryAddress}
+                            >
+                              {order.deliveryAddress}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center text-xs whitespace-nowrap text-muted-foreground">
+                        {formatDate(order.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-foreground tabular-nums">
+                        {formatCurrency(order.subtotal)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">
+                          {payment?.label ?? order.paymentMethod}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <OrderStatusBadge status={order.status} />
+                      </TableCell>
+                      <TableCell
+                        className="text-center"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        Procesar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                          className="h-8 px-3 text-xs font-medium"
+                        >
+                          Procesar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Pagination bar */}
           <OrdersPagination
@@ -412,14 +422,14 @@ export function AdminPedidosPage() {
       )}
 
       {/* Modal Dialog for Processing or Cancelling Order */}
-      {selectedOrder ? (
+      {displayedOrder ? (
         <ProcessOrderDialog
-          key={selectedOrder.id}
-          open
+          key={displayedOrder.id}
+          open={Boolean(selectedOrder)}
           onOpenChange={(open) => {
             if (!open) setSelectedOrder(null)
           }}
-          order={selectedOrder}
+          order={displayedOrder}
           onApprove={() => void handleApprove()}
           onCancel={(reason, observations) =>
             void handleCancel(reason, observations)

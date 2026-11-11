@@ -49,12 +49,14 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --animate-page-in: pageIn 220ms ease-out;
-  --animate-bump: bump 350ms ease-out;
+  --animate-page-in: pageIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-bump: bump 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-scale-in: scaleIn 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-up: fadeUp 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: oklch(0.992 0.002 165);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -64,14 +66,14 @@
   --primary-foreground: oklch(0.979 0.021 166.113);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --muted: oklch(0.968 0.002 165);
+  --muted-foreground: oklch(0.52 0 0);
+  --accent: oklch(0.968 0.002 165);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.918 0.003 165);
+  --input: oklch(0.918 0.003 165);
+  --ring: oklch(0.508 0.118 165.612 / 55%);
   --chart-1: oklch(0.596 0.145 163.225);
   --chart-2: oklch(0.62 0.18 250);
   --chart-3: oklch(0.72 0.18 75);
@@ -91,28 +93,28 @@
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.195 0.003 165);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.205 0.003 165);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.432 0.095 166.913);
-  --primary-foreground: oklch(0.979 0.021 166.113);
+  --primary: oklch(0.56 0.13 165.5);
+  --primary-foreground: oklch(0.985 0.015 166);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.255 0.003 165);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.255 0.003 165);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.56 0.13 165.5 / 60%);
   --chart-1: oklch(0.696 0.17 162.48);
   --chart-2: oklch(0.68 0.16 250);
   --chart-3: oklch(0.78 0.16 75);
   --chart-4: oklch(0.62 0.16 300);
   --chart-5: oklch(0.68 0.18 25);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.195 0.003 165);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.696 0.17 162.48);
   --sidebar-primary-foreground: oklch(0.262 0.051 172.552);
@@ -127,17 +129,28 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-[17px];
+    @apply bg-background text-foreground text-[17px] antialiased selection:bg-primary/20 selection:text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
   }
 }
 
 @keyframes pageIn {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px) scale(0.996);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -145,14 +158,39 @@
   }
 }
 
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @keyframes bump {
   0% {
     transform: scale(1);
   }
-  50% {
-    transform: scale(1.15);
+  45% {
+    transform: scale(1.22) rotate(-4deg);
+  }
+  75% {
+    transform: scale(0.95) rotate(2deg);
   }
   100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

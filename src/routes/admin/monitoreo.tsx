@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { IconEye, IconInbox, IconRefresh } from "@tabler/icons-react"
+import {
+  IconBuildingBank,
+  IconCash,
+  IconInbox,
+  IconRefresh,
+} from "@tabler/icons-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
@@ -24,19 +29,22 @@ import { clientLabel } from "@/logistics/client-label"
 import type { OrderStatusId, PaymentMethod } from "@/orders/model"
 import { PAYMENT_METHODS } from "@/orders/model"
 import { useOrdersStore } from "@/orders/store"
+import { OrderBarChart } from "@/orders/ui/order-bar-chart"
 import { OrderDetailDialog } from "@/orders/ui/order-detail-dialog"
-import { OrderMetricsCards } from "@/orders/ui/order-metrics-cards"
+import { OrderPieChart } from "@/orders/ui/order-pie-chart"
+import type { MonitoreoStatusFilter } from "@/orders/ui/orders-filters-bar"
 import { OrdersFiltersBar } from "@/orders/ui/orders-filters-bar"
 import { OrdersPagination } from "@/orders/ui/orders-pagination"
 import { OrderStatusBadge } from "@/orders/ui/order-status-badge"
-import { OrderStatusDistribution } from "@/orders/ui/order-status-distribution"
 import { formatCurrency, formatDate } from "@/shared/lib/format"
+import { usePreservedValue } from "@/shared/lib/use-preserved-value"
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 6
 
 /**
- * Admin monitoring dashboard page for real-time visibility into all orders,
- * lifecycle progression metrics, payment distribution, and detailed inspection.
+ * Admin monitoring page:
+ * Clean overview with 1 bar chart (by status), 1 pie chart (by payment method),
+ * filter controls, and full orders table.
  */
 export function AdminMonitoreoPage() {
   const orders = useOrdersStore((s) => s.orders)
@@ -45,7 +53,7 @@ export function AdminMonitoreoPage() {
   const loadOrders = useOrdersStore((s) => s.loadOrders)
   const hydrateOrder = useOrdersStore((s) => s.hydrateOrder)
 
-  const [statusFilter, setStatusFilter] = useState<OrderStatusId | "all">("all")
+  const [statusFilter, setStatusFilter] = useState<MonitoreoStatusFilter>("all")
   const [paymentFilter, setPaymentFilter] = useState<PaymentMethod | "all">(
     "all"
   )
@@ -57,6 +65,7 @@ export function AdminMonitoreoPage() {
   const [inspectId, setInspectId] = useState<string | null>(null)
   const [itemsError, setItemsError] = useState<string | null>(null)
   const inspectOrder = orders.find((o) => o.id === inspectId)
+  const displayedInspectOrder = usePreservedValue(inspectOrder)
 
   const isLoadingItems =
     inspectOrder !== undefined && inspectOrder.items.length === 0 && !itemsError
@@ -87,9 +96,12 @@ export function AdminMonitoreoPage() {
   }, [inspectId, loadOrderItems])
 
   // Count distribution across all orders
-  const statusCounts = useMemo<Record<OrderStatusId | "all", number>>(
+  const statusCounts = useMemo<Record<MonitoreoStatusFilter, number>>(
     () => ({
       all: orders.length,
+      active: orders.filter(
+        (o) => o.status === "en-analisis" || o.status === "en-proceso"
+      ).length,
       "en-analisis": orders.filter((o) => o.status === "en-analisis").length,
       "en-proceso": orders.filter((o) => o.status === "en-proceso").length,
       entregado: orders.filter((o) => o.status === "entregado").length,
@@ -103,7 +115,12 @@ export function AdminMonitoreoPage() {
     const query = searchTerm.trim().toLowerCase()
     return orders.filter((order) => {
       const matchesStatus =
-        statusFilter === "all" || order.status === statusFilter
+        statusFilter === "all"
+          ? true
+          : statusFilter === "active"
+            ? order.status === "en-analisis" || order.status === "en-proceso"
+            : order.status === statusFilter
+
       const matchesPayment =
         paymentFilter === "all" || order.paymentMethod === paymentFilter
       if (!matchesStatus || !matchesPayment) return false
@@ -122,7 +139,7 @@ export function AdminMonitoreoPage() {
     setCurrentPage(1)
   }
 
-  const handleStatusChange = (status: OrderStatusId | "all") => {
+  const handleStatusChange = (status: MonitoreoStatusFilter) => {
     setStatusFilter(status)
     setCurrentPage(1)
   }
@@ -145,7 +162,7 @@ export function AdminMonitoreoPage() {
     setIsRefreshing(true)
     try {
       await loadOrders()
-      toast.success("Datos de monitoreo actualizados")
+      toast.success("Datos actualizados")
     } catch {
       toast.error("No pudimos actualizar los datos")
     } finally {
@@ -156,16 +173,16 @@ export function AdminMonitoreoPage() {
   const showInitialLoading = isLoading && orders.length === 0
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
-      {/* Top Header */}
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5 p-6">
+      {/* Header */}
       <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-heading text-[1.65rem] font-semibold tracking-tight">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
             Monitoreo de Pedidos
           </h1>
           <p className="text-sm text-muted-foreground">
-            Seguimiento en tiempo real de los estados de los pedidos y control
-            operativo del flujo comercial.
+            Control y seguimiento de todos los pedidos registrados en el
+            sistema.
           </p>
         </div>
 
@@ -185,20 +202,28 @@ export function AdminMonitoreoPage() {
         </Button>
       </header>
 
-      {/* KPI METRICS AND DISTRIBUTION VISUALS */}
-      <div className="flex flex-col gap-4">
-        {/* KPI Cards */}
-        <OrderMetricsCards orders={orders} />
-
-        {/* Status Distribution Bar Chart */}
-        <OrderStatusDistribution
+      {/* 2 CHARTS: 1 BAR CHART + 1 PIE/DONUT CHART */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* Gráfico de Barras: Pedidos por Estado */}
+        <OrderBarChart
           orders={orders}
-          selectedStatus={statusFilter}
+          selectedStatus={
+            statusFilter === "active"
+              ? "all"
+              : (statusFilter as OrderStatusId | "all")
+          }
           onSelectStatus={handleStatusChange}
+        />
+
+        {/* Gráfico de Tortas: Medios de Pago */}
+        <OrderPieChart
+          orders={orders}
+          selectedPayment={paymentFilter}
+          onSelectPayment={handlePaymentChange}
         />
       </div>
 
-      {/* FILTER CONTROLS BAR */}
+      {/* FILTROS */}
       <OrdersFiltersBar
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
@@ -207,21 +232,21 @@ export function AdminMonitoreoPage() {
         paymentFilter={paymentFilter}
         onPaymentChange={handlePaymentChange}
         statusCounts={statusCounts}
-        placeholder="Buscar en monitoreo por ID, cliente o dirección..."
+        placeholder="Buscar por ID, cliente o dirección..."
       />
 
-      {/* ORDERS TRACKING TABLE */}
+      {/* TABLA CON TODOS LOS PEDIDOS */}
       {showInitialLoading ? (
         <div className="flex flex-1 items-center justify-center py-20">
           <Spinner className="size-6 text-muted-foreground" />
         </div>
       ) : loadError && orders.length === 0 ? (
-        <Empty className="border border-dashed py-12">
+        <Empty className="animate-fade-up border border-dashed py-12">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <IconInbox />
             </EmptyMedia>
-            <EmptyTitle>Error al cargar monitoreo</EmptyTitle>
+            <EmptyTitle>Error al cargar pedidos</EmptyTitle>
             <EmptyDescription>{loadError}</EmptyDescription>
           </EmptyHeader>
           <Button
@@ -234,7 +259,7 @@ export function AdminMonitoreoPage() {
           </Button>
         </Empty>
       ) : orders.length === 0 ? (
-        <Empty className="border border-dashed py-14">
+        <Empty className="animate-fade-up border border-dashed py-14">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <IconInbox />
@@ -246,7 +271,7 @@ export function AdminMonitoreoPage() {
           </EmptyHeader>
         </Empty>
       ) : filteredOrders.length === 0 ? (
-        <Empty className="border border-dashed py-14">
+        <Empty className="animate-fade-up border border-dashed py-14">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <IconInbox />
@@ -270,77 +295,77 @@ export function AdminMonitoreoPage() {
           </Button>
         </Empty>
       ) : (
-        <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/30">
-                <TableHead className="w-28 text-center">ID</TableHead>
-                <TableHead className="text-left">Cliente</TableHead>
-                <TableHead className="text-center">Fecha</TableHead>
-                <TableHead className="text-left">
-                  Dirección de Entrega
-                </TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-center">Pago</TableHead>
-                <TableHead className="text-center">Estado Actual</TableHead>
-                <TableHead className="w-28 text-center">Acción</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedOrders.map((order) => {
-                const payment = PAYMENT_METHODS.find(
-                  (method) => method.id === order.paymentMethod
-                )
+        <div className="flex animate-fade-up flex-col overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40">
+                  <TableHead className="text-left font-semibold">
+                    Cliente
+                  </TableHead>
+                  <TableHead className="text-center font-semibold">
+                    Fecha
+                  </TableHead>
+                  <TableHead className="text-right font-semibold">
+                    Total
+                  </TableHead>
+                  <TableHead className="text-center font-semibold">
+                    Pago
+                  </TableHead>
+                  <TableHead className="text-center font-semibold">
+                    Estado
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedOrders.map((order) => {
+                  const payment = PAYMENT_METHODS.find(
+                    (method) => method.id === order.paymentMethod
+                  )
+                  const isChecking = order.paymentMethod === "cuenta-corriente"
 
-                return (
-                  <TableRow
-                    key={order.id}
-                    className="cursor-pointer transition-colors hover:bg-muted/40"
-                    onClick={() => setInspectId(order.id)}
-                  >
-                    <TableCell className="text-center font-mono text-xs font-semibold text-muted-foreground">
-                      #{order.id.slice(0, 8).toUpperCase()}
-                    </TableCell>
-                    <TableCell className="text-left font-medium text-foreground">
-                      {order.userName}
-                    </TableCell>
-                    <TableCell className="text-center text-xs whitespace-nowrap text-muted-foreground">
-                      {formatDate(order.createdAt)}
-                    </TableCell>
-                    <TableCell className="max-w-[220px] truncate text-left text-xs text-muted-foreground">
-                      {order.deliveryAddress ?? "Sin dirección especificada"}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-foreground tabular-nums">
-                      {formatCurrency(order.subtotal)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline">
-                        {payment?.label ?? order.paymentMethod}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <OrderStatusBadge status={order.status} />
-                    </TableCell>
-                    <TableCell
-                      className="text-center"
-                      onClick={(e) => e.stopPropagation()}
+                  return (
+                    <TableRow
+                      key={order.id}
+                      className="cursor-pointer transition-colors hover:bg-muted/40"
+                      onClick={() => setInspectId(order.id)}
+                      title="Clic para ver detalle"
                     >
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setInspectId(order.id)}
-                        className="h-8 gap-1 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground"
-                      >
-                        <IconEye className="size-3.5" aria-hidden />
-                        <span>Detalle</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                      <TableCell className="text-left font-medium text-foreground">
+                        {order.userName}
+                      </TableCell>
+                      <TableCell className="text-center text-xs whitespace-nowrap text-muted-foreground">
+                        {formatDate(order.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-foreground tabular-nums">
+                        {formatCurrency(order.subtotal)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge
+                          variant="outline"
+                          className={`gap-1 font-medium ${
+                            isChecking
+                              ? "border-blue-500/30 text-blue-600 dark:text-blue-400"
+                              : "border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                          }`}
+                        >
+                          {isChecking ? (
+                            <IconBuildingBank className="size-3" aria-hidden />
+                          ) : (
+                            <IconCash className="size-3" aria-hidden />
+                          )}
+                          <span>{payment?.label ?? order.paymentMethod}</span>
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <OrderStatusBadge status={order.status} />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Table Pagination */}
           <OrdersPagination
@@ -354,22 +379,22 @@ export function AdminMonitoreoPage() {
       )}
 
       {/* Order Detail Modal Inspection */}
-      {inspectOrder ? (
+      {displayedInspectOrder ? (
         <OrderDetailDialog
-          open
+          open={Boolean(inspectOrder)}
           onOpenChange={(open) => {
             if (!open) {
               setInspectId(null)
               setItemsError(null)
             }
           }}
-          order={inspectOrder}
-          clientName={clientLabel(inspectOrder)}
+          order={displayedInspectOrder}
+          clientName={clientLabel(displayedInspectOrder)}
           isLoadingItems={isLoadingItems}
           itemsError={itemsError}
           onRetryItems={() => {
             setItemsError(null)
-            void loadOrderItems(inspectOrder.id)
+            void loadOrderItems(displayedInspectOrder.id)
           }}
         />
       ) : null}

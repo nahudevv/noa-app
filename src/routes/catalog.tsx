@@ -52,8 +52,10 @@ export function CatalogPage() {
         <div className="mx-auto flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
           <header className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <IconBox className="size-4" aria-hidden />
-              <span className="text-xs tracking-wider uppercase">Catálogo</span>
+              <IconBox className="size-4 text-primary" aria-hidden />
+              <span className="text-xs font-medium tracking-wider uppercase">
+                Catálogo
+              </span>
             </div>
             <h1 className="font-heading text-[1.65rem] font-semibold tracking-tight">
               Productos disponibles
@@ -63,7 +65,7 @@ export function CatalogPage() {
             </p>
           </header>
 
-          <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3.5 shadow-2xs sm:flex-row sm:items-center">
             <SearchInput
               value={query}
               onChange={setQuery}
@@ -79,7 +81,7 @@ export function CatalogPage() {
               <Spinner className="size-6 text-muted-foreground" />
             </div>
           ) : error ? (
-            <div className="flex flex-1 items-center justify-center py-20">
+            <div className="flex flex-1 animate-fade-up items-center justify-center py-20">
               <Empty className="max-w-md">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -91,7 +93,7 @@ export function CatalogPage() {
               </Empty>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center py-20">
+            <div className="flex flex-1 animate-fade-up items-center justify-center py-20">
               <Empty className="max-w-md">
                 <EmptyHeader>
                   <EmptyMedia variant="icon">
@@ -108,8 +110,16 @@ export function CatalogPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {filtered.map((product, index) => (
+                <div
+                  key={product.id}
+                  className="h-full animate-fade-up"
+                  style={{
+                    animationDelay: `${Math.min(index * 25, 220)}ms`,
+                  }}
+                >
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
           )}

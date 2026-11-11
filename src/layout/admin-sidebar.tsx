@@ -4,15 +4,17 @@ import {
   IconBox,
   IconBuildingWarehouse,
   IconChartBar,
+  IconEye,
+  IconLayoutGrid,
   IconLogout,
   IconReceipt,
   IconTruckDelivery,
   IconUsers,
-  IconEye,
   type Icon,
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { LogoutDialog } from "@/shared/ui/logout-dialog"
 import { useAuthStore } from "@/auth/session-store"
 import { displayName } from "@/auth/model"
@@ -24,9 +26,11 @@ type NavItem = {
   to: string
   label: string
   icon: Icon
+  end?: boolean
 }
 
 const NAV_ITEMS: ReadonlyArray<NavItem> = [
+  { to: "/admin", label: "Panel general", icon: IconLayoutGrid, end: true },
   { to: "/admin/pedidos", label: "Pedidos", icon: IconReceipt },
   { to: "/admin/inventario", label: "Inventario", icon: IconBox },
   { to: "/admin/clientes", label: "Clientes", icon: IconUsers },
@@ -53,50 +57,65 @@ export function AdminSidebar() {
 
   return (
     <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
-      <Link
-        to="/admin"
-        className="flex items-center gap-3 border-b border-border px-5 py-4 transition-colors hover:bg-muted/40"
-      >
-        <IconBuildingWarehouse
-          className="size-5 shrink-0 text-primary"
-          aria-hidden
-        />
-        <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-sm font-medium tracking-tight">
-            Distribuidora NOA
+      <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
+        <Link
+          to="/admin"
+          className="group flex min-w-0 items-center gap-3 rounded-lg p-1 transition-colors"
+        >
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-105">
+            <IconBuildingWarehouse className="size-4.5" aria-hidden />
+          </div>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-sm font-semibold tracking-tight">
+              Distribuidora NOA
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              Panel de control
+            </span>
           </span>
-          <span className="truncate text-xs text-muted-foreground">
-            Panel de control
-          </span>
-        </span>
-      </Link>
+        </Link>
+        <ThemeToggle />
+      </div>
 
       <nav aria-label="Administración" className="flex-1 overflow-y-auto p-3">
-        <ul className="flex flex-col gap-0.5">
+        <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => (
             <li key={item.to}>
               <NavLink
                 to={item.to}
-                end
+                end={item.end ?? true}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                    "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150",
                     isActive
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      ? "bg-primary/10 font-medium text-primary shadow-2xs"
+                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "absolute left-0 h-4 w-1 rounded-r-full bg-primary transition-all duration-200",
+                        isActive
+                          ? "scale-y-100 opacity-100"
+                          : "scale-y-0 opacity-0"
+                      )}
+                    />
                     <item.icon
                       className={cn(
-                        "size-4 shrink-0",
-                        isActive ? "text-foreground" : "text-muted-foreground"
+                        "size-4 shrink-0 transition-transform duration-150 group-hover:translate-x-0.5",
+                        isActive
+                          ? "text-primary"
+                          : "text-muted-foreground group-hover:text-foreground"
                       )}
                       aria-hidden
                     />
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate transition-transform duration-150 group-hover:translate-x-0.5">
+                      {item.label}
+                    </span>
                   </>
                 )}
               </NavLink>
@@ -105,10 +124,10 @@ export function AdminSidebar() {
         </ul>
       </nav>
 
-      <div className="mt-auto flex flex-col gap-2 border-t border-border p-3">
-        <div className="flex items-center gap-3 rounded-md px-2 py-2">
+      <div className="mt-auto flex flex-col gap-2.5 border-t border-border bg-muted/20 p-3">
+        <div className="flex items-center gap-3 rounded-lg px-2 py-1.5">
           <div
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary ring-1 ring-primary/20"
             aria-hidden
           >
             {initials}
@@ -128,7 +147,7 @@ export function AdminSidebar() {
           size="sm"
           onClick={() => setLogoutOpen(true)}
           aria-label="Cerrar sesión"
-          className="w-full"
+          className="w-full hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
         >
           <IconLogout data-icon="inline-start" />
           Salir
